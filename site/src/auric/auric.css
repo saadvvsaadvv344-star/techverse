@@ -1,0 +1,44 @@
+/* Auric's own styles: every class starts with "ax-" (the core design system is in styles.css).
+   Auric appends new rules at the end, one block per component, between "/* auric:<name> */" markers. */
+
+/* auric:ScrollReveal */
+.ax-reveal { opacity: 0; transform: translateY(14px); transition: opacity .55s ease, transform .55s cubic-bezier(.2, .8, .2, 1); }
+.ax-reveal.ax-in { opacity: 1; transform: none; }
+
+/* auric:ScrollProgress */
+.ax-progress { position: fixed; left: 0; top: 0; z-index: 50; width: 100%; height: 3px; transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2)); pointer-events: none; }
+
+/* auric:Spotlight */
+.card, .sec { position: relative; overflow: hidden; }
+.card::after, .sec::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .25s;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%); }
+.card:hover::after, .sec:hover::after { opacity: 1; }
+
+/* auric:MagneticButtons */
+.ax-magnetic-buttons-btn {
+  transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
+}
+
+.ax-magnetic-buttons-btn:hover {
+  transform: scale(1.05);
+}
+
+/* auric:GlossaryFlip */
+.ax-glossary-flip dt::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to right, var(--accent), var(--accent2));
+  z-index: 1;
+}
+
+.ax-glossary-flip dd {
+  padding: 1rem;
+  background-color: var(--card);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform-origin: center;
+}

@@ -1,0 +1,88 @@
+# Auric works on TechVerse on GitHub's free computers, every 6 hours, whether Saad's PC is on or off.
+# It writes and checks pages, designs the site's code, publishes to Firebase (techverse-saad), and saves its designs
+# and memory back into this project. Saad's ON/OFF switch (published by his PC) stops it.
+name: Auric works on TechVerse
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: auric-worker
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  work:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env:
+      AURIC_CLOUD: "1"
+      AURIC_MINUTES: "270"
+      AURIC_REST_MIN: "1"
+      AURIC_LLAMA_WRITER: http://127.0.0.1:8081
+      AURIC_LLAMA_CODER: http://127.0.0.1:8082
+      LLAMA_RELEASE: b11714
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Tools
+        run: |
+          pip install --quiet "huggingface_hub[cli]" google-auth requests pillow pypdf certifi
+          npm ci --prefix site --no-audit --no-fund
+          npm install -g firebase-tools@15.33.0 --no-audit --no-fund
+          which google-chrome || which chromium
+
+      - name: llama.cpp (runs the brains on the processor)
+        run: |
+          mkdir -p llama
+          curl -sSL -o llama.tar.gz "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_RELEASE}/llama-${LLAMA_RELEASE}-bin-ubuntu-x64.tar.gz"
+          tar -xzf llama.tar.gz -C llama
+          echo "LLAMA_SERVER=$(find llama -name llama-server -type f | head -1)" >> "$GITHUB_ENV"
+
+      - name: Auric's brains (writer 7B + coder 7B)
+        run: |
+          hf download Qwen/Qwen2.5-7B-Instruct-GGUF --include "qwen2.5-7b-instruct-q4_k_m-0000*-of-00002.gguf" --local-dir models
+          hf download Qwen/Qwen2.5-Coder-7B-Instruct-GGUF qwen2.5-coder-7b-instruct-q4_k_m.gguf --local-dir models
+          df -h . | tail -1
+
+      - name: Wake the brains
+        run: |
+          export LD_LIBRARY_PATH="$(dirname "$LLAMA_SERVER"):$LD_LIBRARY_PATH"
+          nohup "$LLAMA_SERVER" -m models/qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf --host 127.0.0.1 --port 8081 -c 8192 -t 4 -np 1 > writer.log 2>&1 &
+          nohup "$LLAMA_SERVER" -m models/qwen2.5-coder-7b-instruct-q4_k_m.gguf --host 127.0.0.1 --port 8082 -c 8192 -t 4 -np 1 > coder.log 2>&1 &
+          for port in 8081 8082; do
+            for i in $(seq 1 90); do curl -sf "http://127.0.0.1:$port/health" > /dev/null && break; sleep 4; done
+            curl -sf "http://127.0.0.1:$port/health" || (tail -30 writer.log coder.log; exit 1)
+          done
+
+      - name: Auric works (about 4.5 hours)
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SA }}
+        run: |
+          printf '%s' "$FIREBASE_SA" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          export AURIC_SITE="$GITHUB_WORKSPACE/site" AURIC_STATE_DIR="$GITHUB_WORKSPACE/state" AURIC_FIREBASE_DIR="$GITHUB_WORKSPACE"
+          git config user.name "Auric"
+          git config user.email "auric@users.noreply.github.com"
+          mkdir -p state
+          cd worker && python -u techverse_agent.py
+
+      - name: Save Auric's work
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/sa.json"
+          git add site/src/auric state 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "Auric: designs and memory after a cloud work session"
+          git pull --rebase --autostash && git push || true

@@ -1,0 +1,23 @@
+rules_version = '2';
+// TechVerse: everyone reads; only Auric (from Saad's PC, with the project owner's login, which these rules don't apply
+// to) writes articles, topics, the index, the queue and the history. Visitors may only add a +1 view and a missed search.
+service cloud.firestore {
+  match /databases/{db}/documents {
+    match /articles/{id} { allow read: if true; allow write: if false; }
+    match /meta/{id}     { allow read: if true; allow write: if false; }
+    match /topics/{id}   { allow read: if true; allow write: if false; }
+    match /history/{id}  { allow read: if true; allow write: if false; }
+    match /queue/{id}    { allow read, write: if false; }
+
+    match /views/{id} {
+      allow read: if true;
+      allow create: if id.size() <= 120 && request.resource.data.keys().hasOnly(['n']) && request.resource.data.n == 1;
+      allow update: if request.resource.data.keys().hasOnly(['n']) && request.resource.data.n == resource.data.n + 1;
+    }
+    match /misses/{id} {
+      allow read: if false;
+      allow create: if request.resource.data.keys().hasOnly(['q']) && request.resource.data.q is string
+                    && request.resource.data.q.size() > 1 && request.resource.data.q.size() <= 80;
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+ "effects": [
+  {
+   "name": "ScrollReveal",
+   "about": "cards, sections and steps glide in as they scroll into view",
+   "added": "2026-10-28T23:00:00",
+   "by": "starter (example for Auric)"
+  },
+  {
+   "name": "ScrollProgress",
+   "about": "a thin bar at the top shows how far down the page you are",
+   "added": "2026-10-28T23:00:00",
+   "by": "starter (example for Auric)"
+  },
+  {
+   "name": "Spotlight",
+   "about": "a soft light follows the mouse over cards",
+   "added": "2026-10-28T23:00:00",
+   "by": "starter (example for Auric)"
+  },
+  {
+   "name": "MagneticButtons",
+   "about": "** Enhance buttons with a gentle pull effect towards the mouse cursor, making them more interactive and engaging.",
+   "added": "2026-10-29T19:53:44",
+   "by": "Auric",
+   "kind": "enhancer"
+  },
+  {
+   "name": "GlossaryFlip",
+   "about": "Adds interactive flip cards to glossary terms on the TechVerse website, enhancing user experience with 3D flipping animations.",
+   "added": "2026-10-29T21:26:37",
+   "by": "Auric",
+   "kind": "enhancer"
+  }
+ ],
+ "demos": []
+}

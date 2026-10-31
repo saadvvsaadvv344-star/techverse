@@ -1,0 +1,8 @@
+node_modules/
+site/dist/
+site/dist-try/
+models/
+llama/
+llama.tar.gz
+*.log
+__pycache__/
