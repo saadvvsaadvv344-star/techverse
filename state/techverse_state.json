@@ -1,9 +1,9 @@
 {
  "phase": "resting",
- "cycle_started": "2026-11-02T10:23:06+00:00",
- "last_subject": "Cryptographic protocol",
- "cycle_ended": "2026-11-02T10:47:11+00:00",
- "cycles": 56,
- "published": 37,
+ "cycle_started": "2026-11-02T20:08:47+00:00",
+ "last_subject": "SQL injection",
+ "cycle_ended": "2026-11-02T20:24:29+00:00",
+ "cycles": 74,
+ "published": 42,
  "last_review": 1793223695.3510792
 }
